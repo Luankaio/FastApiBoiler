@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import HTTPException
 from repository.user_repository import UserRepository
 from models.user import User
@@ -13,8 +14,13 @@ class UserService:
         user_dict = user.__dict__
         return self.user_repository.create_user(user)
 
-    def delete_user():
+    def delete_user(self, user:User):
+        #return await self.user_repository.delete
         pass
+
+    async def find_user_by_id(self, id: UUID):
+        return await self.user_repository.get_user_by_id(id)
 
     async def email_exists(self, user: User) -> bool:
         return await self.user_repository.find_one({"email": user.email})
+    
