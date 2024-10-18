@@ -23,7 +23,10 @@ class UserRepository:
         cursor = self.collection.find({})
         for user in cursor:
             user['_id'] = str(user['_id'])
-            users.append(user)
+            user_dict = user.__dict__ if isinstance(user, User) else user
+            user_dict.pop('password', None)  # Remove o campo 'password', se existir
+
+            users.append(user_dict)
         return users
 
     def delete_user(self, user_id: UUID):

@@ -27,9 +27,6 @@ class UserUseCases:
                 status_code=401,
                 detail='Invalid email or password'
             )
-        print(user['password'])
-        print(user_login.password)
-        print(crypt_context.hash(user['password']))
 
         if not crypt_context.verify(user_login.password, user['password']):
             raise HTTPException(
