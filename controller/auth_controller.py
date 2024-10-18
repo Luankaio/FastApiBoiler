@@ -1,7 +1,7 @@
 from uuid import UUID
 from fastapi import *
 from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from models.user_login import UserLogin
 from service.user_service import UserService
 from security.auth_user import UserUseCases
@@ -26,3 +26,8 @@ class UserAuthController:
             content=auth_data,
             status_code=status.HTTP_200_OK
     )
+
+    
+    @router.get("/protected")
+    def protected_route(current_user: str = Depends(user_use_cases.verify_token)):
+        return {"msg": "You are authorized", "user": current_user}
