@@ -18,7 +18,7 @@ class UserService:
             id=str(uuid4()),
             username=user_dto.username,
             email=user_dto.email,
-            password=crypt_context.hash(user_dto.email),
+            password=crypt_context.hash(user_dto.password),
             created_at=datetime.now(),
             updated_at=datetime.now()
         )

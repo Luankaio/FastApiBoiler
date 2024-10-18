@@ -1,6 +1,7 @@
 from uuid import UUID
 from bson.objectid import ObjectId
 from fastapi import HTTPException, Response
+from pydantic import EmailStr
 from db.database_connection import DataBaseConnection
 from models.user import User
 
@@ -30,3 +31,14 @@ class UserRepository:
         if delete_result.deleted_count == 1:
             return Response(status_code=204, detail="NO CONTENT")
         raise HTTPException(status_code=404, detail=f"Student {id} not found")
+    
+    def find_by_email(self, email: EmailStr):
+        user = self.collection.find_one({"email": email})
+        if user:
+            user['_id'] = str(user['_id'])
+            return user
+        raise HTTPException(status_code=404, detail=f"Not Found")
+
+
+
+
