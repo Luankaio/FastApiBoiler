@@ -3,6 +3,7 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordBearer
 from passlib.context import CryptContext
 from jose import JWTError, jwt
+from models.user import User
 from models.user_login import UserLogin
 from repository.user_repository import UserRepository
 from decouple import config
@@ -36,7 +37,7 @@ class UserUseCases:
                 detail='Invalid username or password'
             )
 
-        exp = datetime.now(timezone .utc) + timedelta(minutes=15)
+        exp = datetime.now(timezone .utc) + timedelta(minutes=30)
 
         payload = {
             'sub': user['email'],
@@ -66,8 +67,10 @@ class UserUseCases:
                 status_code=404,
                 detail="User not found"
             )
+        user_dict = user.__dict__ if isinstance(user, User) else user
+        user_dict.pop('password', None)  # Remove o campo 'password', se existir
 
-        return user 
+        return user_dict
 
     def verify_token(self, credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
         self.get_current_user(credentials)

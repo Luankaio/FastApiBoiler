@@ -15,7 +15,7 @@ class UserService:
         #if await self.email_exists(user):
         #    return HTTPException(status_code=400, detail="Email already registered")
         user = User(
-            id=str(uuid4()),
+            _id=str(uuid4()),
             username=user_dto.username,
             email=user_dto.email,
             password=crypt_context.hash(user_dto.password),
@@ -26,7 +26,7 @@ class UserService:
         return self.user_repository.create_user(user_dict)
 
     def delete_user(self, user:User):
-        #return await self.user_repository.delete
+        return self.user_repository.delete_user()
         pass
 
     def find_user_by_id(self, id: str):
