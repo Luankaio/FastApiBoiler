@@ -1,25 +1,31 @@
 from uuid import UUID
 from fastapi import APIRouter
-from models.user import User
+from dto.user_dto import UserDto
 from service.user_service import UserService
+user_service = UserService()
 
-class CurriculumController:
-    
+class UserController:
+
     router = APIRouter(tags=['User'], prefix="/users")
     
-    @router.post()
-    async def createUser(user: User):
-        return UserService.create_user(user)
+    @router.post("/")
+    def createUser(user_dto: UserDto):
+        return user_service.create_user(user_dto)
     
-    @router.get()
-    async def getUser(id: UUID): 
-        user = UserService.find_user_by_id(id)
-        return {user}
+    @router.get("/{id}")
+    def getUser(id: str): 
+        user = user_service.find_user_by_id(id)
+        return user
     
-    @router.delete()
+    @router.get("/")
+    def get_all():
+        users = user_service.get_all()
+        return users
+    
+    @router.delete("/{id}")
     async def deleteUser(id: UUID): 
         return UserService.delete_user(id)
  
-    @router.put()
+    @router.put("/{id}")
     async def updateUser(): 
         return {"message": "Hello, World!"}

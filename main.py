@@ -1,12 +1,10 @@
 from fastapi import FastAPI
-from db.database_connection import Database
-
+from controller.user_controller import UserController
 
 app = FastAPI()
 
-mongo_uri = "mongodb://localhost:27017"
-database_name = "mydatabase"
-db = Database(mongo_uri, database_name)
+
+app.include_router(UserController.router)
 
 @app.get("/")
 def read_root():

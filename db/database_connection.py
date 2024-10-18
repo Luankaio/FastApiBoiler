@@ -1,19 +1,16 @@
-from pymongo import MongoClient
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 
 class DataBaseConnection:
-    def __init__(self, uri: str, database_name: str):
-        self.uri = uri
-        self.database_name = database_name
-        self.client = None
-        self.db = None
 
-    def connect(self):
-        if self.client is None:
-            self.client = MongoClient(self.uri)
-            self.db = self.client[self.database_name]
-        return self.db
+    
+    uri = os.getenv('DB_URI')
+    client = MongoClient(uri, server_api=ServerApi('1'))
 
-    def close(self):
-        if self.client:
-            self.client.close()
-            self.client = None
+    db = client.listen_db
+    collection = db["users"]
