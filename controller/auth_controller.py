@@ -13,11 +13,10 @@ class UserAuthController:
     router = APIRouter(tags=['Auth'], prefix="/auth")
     
     @router.post("/login")
-    def user_register(
-        request_form_user: OAuth2PasswordRequestForm = Depends(),):  
+    def user_auth(user_login: UserLogin):  
         user = UserLogin(       
-            email=request_form_user.username,
-            password=request_form_user.password
+            email=user_login.email,
+            password=user_login.password
         )
 
         auth_data = user_use_cases.user_login(user_login=user)
@@ -27,7 +26,11 @@ class UserAuthController:
             status_code=status.HTTP_200_OK
     )
 
-    
     @router.get("/protected")
     def protected_route(current_user: str = Depends(user_use_cases.verify_token)):
-        return {"msg": "You are authorized", "user": current_user}
+        return {"msg": "You are authorized", "user_id": current_user}
+
+    @router.get("/me")
+    def get_me(current_user: dict = Depends(user_use_cases.get_current_user)):
+        return {"user": current_user}
+    
