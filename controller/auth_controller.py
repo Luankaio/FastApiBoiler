@@ -1,9 +1,7 @@
 from uuid import UUID
 from fastapi import *
 from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from models.user_login import UserLogin
-from service.user_service import UserService
 from security.auth_user import UserUseCases
 
 user_use_cases = UserUseCases()

@@ -1,9 +1,12 @@
 from datetime import datetime
 from uuid import UUID, uuid4
+from fastapi import HTTPException
 from passlib.context import CryptContext
+from pydantic import EmailStr
 from repository.user_repository import UserRepository
 from models.user import User
 from dto.user_dto import UserDto
+from dto.user_update_dto import UserUpdateDto
 
 crypt_context = CryptContext(schemes=['sha256_crypt'])
 
@@ -12,27 +15,41 @@ class UserService:
         self.user_repository = UserRepository()
 
     def create_user(self, user_dto: UserDto):
-        #if await self.email_exists(user):
-        #    return HTTPException(status_code=400, detail="Email already registered")
+        if self.user_repository.email_exists(user_dto.email):
+            return HTTPException(status_code=400, detail="Email already registered")
         user = User(
             id=str(uuid4()),
             username=user_dto.username,
             email=user_dto.email,
             password=crypt_context.hash(user_dto.password),
             created_at=datetime.now(),
-            updated_at=datetime.now()
+            updated_at=datetime.now(),
+            is_active=True
         )
         user_dict = user.__dict__
         return self.user_repository.create_user(user_dict)
 
-    def delete_user(self, user:User):
+    def delete_user(self, user_id:str):
         return self.user_repository.delete_user()
 
+    def update_user(self, user_id:str, user_update_dto:UserUpdateDto):
+        user = self.find_user_by_id(user_id)
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        update_data = user_update_dto.dict(exclude_unset=True)
+        update_data['updated_at'] = datetime.now()
+
+        result = self.user_repository.update_user(user_id, update_data)
+
+        if result.modified_count == 0:
+            raise HTTPException(status_code=400, detail="No changes made or update failed")
+
+        return self.find_user_by_id(user_id)
+    
     def find_user_by_id(self, id: str):
         return self.user_repository.get_user_by_id(id)
-
-    def email_exists(self, user: User) -> bool:
-        return self.user_repository.find_one({"email": user.email})
     
     def get_all(self):
         return self.user_repository.get_all_users()

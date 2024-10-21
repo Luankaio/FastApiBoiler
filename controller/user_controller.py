@@ -1,7 +1,9 @@
 from uuid import UUID
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from dto.user_dto import UserDto
 from service.user_service import UserService
+from dto.user_update_dto import UserUpdateDto
+
 user_service = UserService()
 
 class UserController:
@@ -26,6 +28,10 @@ class UserController:
     async def deleteUser(id: UUID): 
         return UserService.delete_user(id)
  
-    @router.put("/{id}")
-    async def updateUser(): 
-        return {"message": "Hello, World!"}
+    @router.patch("/users/{user_id}")
+    def update_user(user_id: str, user_update_dto: UserUpdateDto):
+        try:
+            updated_user = user_service.update_user(user_id, user_update_dto)
+            return updated_user
+        except HTTPException as e:
+            raise HTTPException(status_code=e.status_code, detail=e.detail)

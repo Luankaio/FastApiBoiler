@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 from bson.objectid import ObjectId
 from fastapi import HTTPException, Response
@@ -16,7 +17,12 @@ class UserRepository:
     
     def get_user_by_id(self, user_id: str):
         user = self.collection.find_one({"_id": ObjectId(user_id)})
-        return str(user)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user['_id'] = str(user['_id'])
+        user.pop('password', None) 
+        return user
     
     def get_all_users(self):
         users = []
@@ -24,10 +30,17 @@ class UserRepository:
         for user in cursor:
             user['_id'] = str(user['_id'])
             user_dict = user.__dict__ if isinstance(user, User) else user
-            user_dict.pop('password', None)  # Remove o campo 'password', se existir
+            user_dict.pop('password', None)
 
             users.append(user_dict)
         return users
+    
+
+    def update_user(self, user_id: str, update_data: dict):
+        return self.collection.update_one(
+            {"_id": ObjectId(user_id)}, 
+            {"$set": update_data}
+        )
 
     def delete_user(self, user_id: UUID):
         delete_result = self.collection.delete_one({"__id": ObjectId(user_id)})
@@ -35,6 +48,10 @@ class UserRepository:
             return Response(status_code=204, detail="NO CONTENT")
         raise HTTPException(status_code=404, detail=f"Student {id} not found")
     
+    def email_exists(self, email: EmailStr) -> bool:
+        return bool(self.collection.find_one({"email": email}))
+
+
     def find_by_email(self, email: EmailStr):
         user = self.collection.find_one({"email": email})
         if user:

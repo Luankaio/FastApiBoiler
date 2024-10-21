@@ -65,8 +65,7 @@ class UserUseCases:
                 detail="User not found"
             )
         user_dict = user.__dict__ if isinstance(user, User) else user
-        user_dict.pop('password', None)  # Remove o campo 'password', se existir
-
+        user_dict.pop('password', None) 
         return user_dict
 
     def verify_token(self, credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
