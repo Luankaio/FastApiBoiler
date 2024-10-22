@@ -10,6 +10,7 @@ from decouple import config
 
 SECRET_KEY = config('SECRET_KEY')
 ALGORITHM = config('ALGORITHM')
+ACCESS_TOKEN_EXPIRE_MINUTES = 20  
 
 crypt_context = CryptContext(schemes=['sha256_crypt'])
 bearer_scheme = HTTPBearer()
@@ -19,7 +20,7 @@ class UserUseCases:
         self.user_repository = UserRepository()
 
 
-    def user_login(self, user_login: UserLogin, expires_in: int = 30):
+    def user_login(self, user_login: UserLogin):
         user = self.user_repository.find_by_email(user_login.email)
 
         if user is None:
@@ -34,7 +35,7 @@ class UserUseCases:
                 detail='Invalid username or password'
             )
 
-        exp = datetime.now(timezone .utc) + timedelta(minutes=30)
+        exp = datetime.now(timezone .utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
         payload = {
             'sub': user['email'],
@@ -48,7 +49,7 @@ class UserUseCases:
             'exp': exp.isoformat()
         }
     
-    def get_current_user(self, credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+    def get_current_user(self, credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)) -> dict:
         token = credentials.credentials
         try:
             data = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -75,3 +76,9 @@ class UserUseCases:
     def get_current_user_id(self, credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
         user = self.get_current_user(credentials)
         return user['id']
+
+    def is_admin(current_user: dict = Depends(get_current_user)):
+        if current_user["role"] != "admin":
+            raise HTTPException(status_code=403, detail="Insufficient permissions")
+        return True
+    

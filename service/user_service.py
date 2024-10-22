@@ -18,7 +18,7 @@ class UserService:
         if self.user_repository.email_exists(user_dto.email):
             return HTTPException(status_code=400, detail="Email already registered")
         user = User(
-            id=str(uuid4()),
+            user_id=str(uuid4()),
             username=user_dto.username,
             email=user_dto.email,
             password=crypt_context.hash(user_dto.password),
