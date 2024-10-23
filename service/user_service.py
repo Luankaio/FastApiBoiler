@@ -1,15 +1,16 @@
 from datetime import datetime
 from uuid import UUID, uuid4
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
 from passlib.context import CryptContext
 from pydantic import EmailStr
 from repository.user_repository import UserRepository
 from models.user import User
 from dto.user_dto import UserDto
 from dto.user_update_dto import UserUpdateDto
-
+from security.auth_user import UserUseCases
 crypt_context = CryptContext(schemes=['sha256_crypt'])
 
+user_use_cases = UserUseCases()
 class UserService:
     def __init__(self):
         self.user_repository = UserRepository()
@@ -32,8 +33,11 @@ class UserService:
     def delete_user(self, user_id:str):
         return self.user_repository.delete_user()
 
-    def update_user(self, user_id:str, user_update_dto:UserUpdateDto):
+    def update_user(self, user_id:str, user_update_dto:UserUpdateDto, current_user: dict = Depends(user_use_cases.get_current_user)):
         user = self.find_user_by_id(user_id)
+
+        if(current_user["_id"] != user_id or current_user["role"]!= "admin"):
+            raise HTTPException(status_code=403, detail="Insufficient permissions")
 
         if not user:
             raise HTTPException(status_code=404, detail="User not found")

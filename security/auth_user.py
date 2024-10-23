@@ -75,7 +75,7 @@ class UserUseCases:
 
     def get_current_user_id(self, credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
         user = self.get_current_user(credentials)
-        return user['id']
+        return user['_id']
 
     def is_admin(current_user: dict = Depends(get_current_user)):
         if current_user["role"] != "admin":
