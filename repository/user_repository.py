@@ -42,8 +42,8 @@ class UserRepository:
             {"$set": update_data}
         )
 
-    def delete_user(self, user_id: UUID):
-        delete_result = self.collection.delete_one({"__id": ObjectId(user_id)})
+    def delete_user(self, user_id: str):
+        delete_result = self.collection.delete_one({"_id": ObjectId(user_id)})
         if delete_result.deleted_count == 1:
             return Response(status_code=204, detail="NO CONTENT")
         raise HTTPException(status_code=404, detail=f"Student {id} not found")

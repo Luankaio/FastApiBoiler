@@ -11,7 +11,7 @@ class User(BaseModel):
     created_at: datetime
     updated_at: datetime
     is_active: Optional[bool] = None
-    
+    role: str
     def serialize(self):
         return self.dict(exclude={'password'})
 

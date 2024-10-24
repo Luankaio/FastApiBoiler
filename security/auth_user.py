@@ -32,7 +32,7 @@ class UserUseCases:
         if not crypt_context.verify(user_login.password, user['password']):
             raise HTTPException(
                 status_code=401,    
-                detail='Invalid username or password'
+                detail='Invalid email or password'
             )
 
         exp = datetime.now(timezone .utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -77,8 +77,15 @@ class UserUseCases:
         user = self.get_current_user(credentials)
         return user['_id']
 
-    def is_admin(current_user: dict = Depends(get_current_user)):
-        if current_user["role"] != "admin":
+    def is_admin(self, credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+        current_user = self.get_current_user(credentials)
+        print(f"Current user role: {current_user.get('role')}") 
+        if current_user is None:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found"
+            )
+        if str(current_user["role"]) != "admin":
             raise HTTPException(status_code=403, detail="Insufficient permissions")
         return True
     
