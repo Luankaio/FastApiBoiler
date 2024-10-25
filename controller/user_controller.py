@@ -1,6 +1,9 @@
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
+from dto.paginated_response_dto import PaginatedResponse
+from dto.pagination_dto import Pagination
 from dto.user_dto import UserDto
+from models.user import User
 from security.auth_user import UserUseCases
 from service.user_service import UserService
 from dto.user_update_dto import UserUpdateDto
@@ -22,8 +25,8 @@ class UserController:
         return user
     
     @router.get("/")
-    def get_all(is_admin: bool = Depends(user_use_cases.is_admin) ):
-        users = user_service.get_all()
+    def get_all(pagination: Pagination = Depends() ,is_admin: bool = Depends(user_use_cases.is_admin) ):
+        users = user_service.get_all(pagination)
         return users
     
     @router.delete("/{id}")

@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 from fastapi import Depends, HTTPException
 from passlib.context import CryptContext
 from pydantic import EmailStr
+from dto.pagination_dto import Pagination
 from repository.user_repository import UserRepository
 from models.user import User
 from dto.user_dto import UserDto
@@ -56,5 +57,5 @@ class UserService:
     def find_user_by_id(self, id: str):
         return self.user_repository.get_user_by_id(id)
     
-    def get_all(self):
-        return self.user_repository.get_all_users()
+    def get_all(self, pagination: Pagination):
+        return self.user_repository.get_all_users(pagination)

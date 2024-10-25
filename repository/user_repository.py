@@ -4,6 +4,8 @@ from bson.objectid import ObjectId
 from fastapi import HTTPException, Response
 from pydantic import EmailStr
 from db.database_connection import DataBaseConnection
+from dto.paginated_response_dto import PaginatedResponse
+from dto.pagination_dto import Pagination
 from models.user import User
 
 class UserRepository:
@@ -24,16 +26,20 @@ class UserRepository:
         user.pop('password', None) 
         return user
     
-    def get_all_users(self):
+    def get_all_users(self, pagination_params: Pagination):
+        page = pagination_params.page  # Número da página
+        size = pagination_params.size 
+
         users = []
-        cursor = self.collection.find({})
+        cursor = self.collection.find({}).skip((page - 1) * size).limit(size)
         for user in cursor:
             user['_id'] = str(user['_id'])
             user_dict = user.__dict__ if isinstance(user, User) else user
             user_dict.pop('password', None)
-
+            
             users.append(user_dict)
-        return users
+        return PaginatedResponse(total=10, page=page, page_size=size, data=users)
+        #return users
     
 
     def update_user(self, user_id: str, update_data: dict):
