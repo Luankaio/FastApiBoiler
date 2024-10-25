@@ -24,6 +24,10 @@ class UserAuthController:
             status_code=status.HTTP_200_OK
     )
 
+    @router.post("/refresh")
+    def refresh_token(refresh_token: str):
+        return user_use_cases.refresh_access_token(refresh_token)
+
     @router.get("/protected")
     def protected_route(current_user: str = Depends(user_use_cases.verify_token)):
         return {"msg": "You are authorized", "user_id": current_user}

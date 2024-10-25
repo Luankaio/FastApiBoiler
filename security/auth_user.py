@@ -11,14 +11,13 @@ from decouple import config
 SECRET_KEY = config('SECRET_KEY')
 ALGORITHM = config('ALGORITHM')
 ACCESS_TOKEN_EXPIRE_MINUTES = 20  
-
+REFRESH_TOKEN_EXPIRE_HOURS = 5
 crypt_context = CryptContext(schemes=['sha256_crypt'])
 bearer_scheme = HTTPBearer()
 
 class UserUseCases:
     def __init__(self):
         self.user_repository = UserRepository()
-
 
     def user_login(self, user_login: UserLogin):
         user = self.user_repository.find_by_email(user_login.email)
@@ -35,20 +34,40 @@ class UserUseCases:
                 detail='Invalid email or password'
             )
 
-        exp = datetime.now(timezone .utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token_exp = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        refresh_token_exp = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_HOURS)
 
-        payload = {
-            'sub': user['email'],
-            'exp': exp
-        }
+        access_token_payload = {'sub': user['email'], 'exp': access_token_exp}
+        refresh_token_payload = {'sub': user['email'], 'exp': refresh_token_exp}
 
-        access_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+        access_token = jwt.encode(access_token_payload, SECRET_KEY, algorithm=ALGORITHM)
+        refresh_token = jwt.encode(refresh_token_payload, SECRET_KEY, algorithm=ALGORITHM)
 
         return {
             'access_token': access_token,
-            'exp': exp.isoformat()
+            'refresh_token': refresh_token,
+            'exp': access_token_exp.isoformat()
         }
     
+    def create_access_token(self, data: dict):
+        access_token_exp = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        data.update({"exp": access_token_exp})  # Adiciona a expiração ao payload
+        return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+
+    def refresh_access_token(self, refresh_token: str):
+        try:
+            payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+            user = self.user_repository.find_by_email(payload['sub'])
+            print(payload['sub'])
+            if user is None:
+                raise HTTPException(status_code=403, detail="Invalid refresh token")
+            
+            new_access_token = self.create_access_token(data={'sub': user['email']})
+
+            return {'access_token': new_access_token}
+        except JWTError:
+            raise HTTPException(status_code=403, detail="Invalid refresh token")
+
     def get_current_user(self, credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)) -> dict:
         token = credentials.credentials
         try:
