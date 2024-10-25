@@ -27,7 +27,7 @@ class UserRepository:
         return user
     
     def get_all_users(self, pagination_params: Pagination):
-        page = pagination_params.page  # Número da página
+        page = pagination_params.page 
         size = pagination_params.size 
 
         users = []
@@ -46,6 +46,12 @@ class UserRepository:
         return self.collection.update_one(
             {"_id": ObjectId(user_id)}, 
             {"$set": update_data}
+        )
+    
+    def soft_delete_user(self, user_id: str):
+        return self.collection.update_one(
+            {"_id": ObjectId(user_id)}, 
+            {"$set": {"is_active": False}}
         )
 
     def delete_user(self, user_id: str):

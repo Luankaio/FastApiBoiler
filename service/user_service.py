@@ -33,7 +33,7 @@ class UserService:
         return self.user_repository.create_user(user_dict)
 
     def delete_user(self, user_id:str):
-        return self.user_repository.delete_user(user_id)
+        return self.user_repository.soft_delete_user(user_id)
 
     def update_user(self, user_id:str, user_update_dto:UserUpdateDto, current_user: dict = Depends(user_use_cases.get_current_user)):
         user = self.find_user_by_id(user_id)
