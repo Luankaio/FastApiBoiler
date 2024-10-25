@@ -51,7 +51,8 @@ class UserRepository:
     def soft_delete_user(self, user_id: str):
         return self.collection.update_one(
             {"_id": ObjectId(user_id)}, 
-            {"$set": {"is_active": False}}
+            {"$set": {"is_active": False,
+                      "updated_at": datetime.now()}}
         )
 
     def delete_user(self, user_id: str):

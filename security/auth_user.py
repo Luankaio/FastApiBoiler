@@ -27,6 +27,12 @@ class UserUseCases:
                 status_code=401,
                 detail='Invalid email or password'
             )
+        
+        if user["is_active"] is False:
+            raise HTTPException(
+                status_code=403,
+                detail='Inactive user'
+            )
 
         if not crypt_context.verify(user_login.password, user['password']):
             raise HTTPException(
