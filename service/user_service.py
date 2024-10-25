@@ -35,16 +35,14 @@ class UserService:
     def delete_user(self, user_id:str, current_user: dict = Depends(user_use_cases.get_current_user)):
         user = self.find_user_by_id(user_id)
 
-        if(current_user["_id"] != user_id or current_user["role"]!= "admin"):
-            raise HTTPException(status_code=403, detail="Insufficient permissions")
+        self.validate_admin_or_owner(current_user, user_id)
 
         return self.user_repository.soft_delete_user(user_id)
 
     def update_user(self, user_id:str, user_update_dto:UserUpdateDto, current_user: dict = Depends(user_use_cases.get_current_user)):
         user = self.find_user_by_id(user_id)
 
-        if(current_user["_id"] != user_id or current_user["role"]!= "admin"):
-            raise HTTPException(status_code=403, detail="Insufficient permissions")
+        self.validate_admin_or_owner(current_user, user_id)
 
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -64,3 +62,7 @@ class UserService:
     
     def get_all(self, pagination: Pagination):
         return self.user_repository.get_all_users(pagination)
+    
+    def validate_admin_or_owner(current_user, user_id):
+        if current_user["_id"] != user_id and current_user["role"] != "admin":
+            raise HTTPException(status_code=403, detail="Insufficient permissions")

@@ -114,3 +114,6 @@ class UserUseCases:
             raise HTTPException(status_code=403, detail="Insufficient permissions")
         return True
     
+
+
+    

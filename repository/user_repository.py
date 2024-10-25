@@ -36,8 +36,8 @@ class UserRepository:
             user['_id'] = str(user['_id'])
             user_dict = user.__dict__ if isinstance(user, User) else user
             user_dict.pop('password', None)
-            
             users.append(user_dict)
+            
         return PaginatedResponse(total=10, page=page, page_size=size, data=users)
         #return users
     
