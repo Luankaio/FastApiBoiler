@@ -43,8 +43,8 @@ class UserUseCases:
         access_token_exp = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         refresh_token_exp = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_HOURS)
 
-        access_token_payload = {'sub': user['email'], 'exp': access_token_exp}
-        refresh_token_payload = {'sub': user['email'], 'exp': refresh_token_exp}
+        access_token_payload = {'sub': user['_id'], 'exp': access_token_exp}
+        refresh_token_payload = {'sub': user['_id'], 'exp': refresh_token_exp}
 
         access_token = jwt.encode(access_token_payload, SECRET_KEY, algorithm=ALGORITHM)
         refresh_token = jwt.encode(refresh_token_payload, SECRET_KEY, algorithm=ALGORITHM)
@@ -63,7 +63,7 @@ class UserUseCases:
     def refresh_access_token(self, refresh_token: str):
         try:
             payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
-            user = self.user_repository.find_by_email(payload['sub'])
+            user = self.user_repository.get_user_by_id(payload['sub'])
             print(payload['sub'])
             if user is None:
                 raise HTTPException(status_code=403, detail="Invalid refresh token")
@@ -83,7 +83,7 @@ class UserUseCases:
                 status_code=401,
                 detail='Invalid access token'
             )
-        user = self.user_repository.find_by_email(data['sub'])
+        user = self.user_repository.get_user_by_id(data['sub'])
 
         if user is None:
             raise HTTPException(
